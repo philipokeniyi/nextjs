@@ -1,31 +1,53 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Axios } from "axios";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [user, setUser] = React.useState({
-    username: "",
     email: "",
     password: "",
   });
-  const onLogin = async () => {};
+
+  const [buttonDisabled, setButtonDisabled] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
+  const onLogin = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/users/login", user);
+      if (response.data.success) {
+        toast.success("Login successful! Redirecting to home...");
+        router.push("/profile");
+      } else {
+        toast.error(response.data.error || "Login failed. Please try again.");
+      }
+    } catch (error: any) {
+      console.error(error.response?.data?.error || error.message);
+      toast.error(
+        error.response?.data?.error || "Login failed. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (user.email.length > 0 && user.password.length > 0) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-      <h1 className="text-4xl font-bold">Log In</h1>
-      <label htmlFor="username" className="w-full max-w-sm">
-        Username
-      </label>
-      <input
-        type="text"
-        id="username"
-        value={user.username}
-        onChange={(e) => setUser({ ...user, username: e.target.value })}
-        className="w-full max-w-sm p-2 border border-gray-300 rounded"
-        placeholder="username"
-      />
+      <h1 className="text-4xl font-bold">
+        {loading ? "Loading..." : "Log In"}
+      </h1>
 
       <label htmlFor="email" className="w-full max-w-sm">
         Email
@@ -54,8 +76,9 @@ export default function LoginPage() {
       <button
         onClick={onLogin}
         className="mt-4 px-6 py-3 bg-black text-white rounded-md hover:opacity-80 transition"
+        disabled={buttonDisabled}
       >
-        Log In
+        {buttonDisabled ? "Fill all fields" : "Log In"}
       </button>
 
       <Link
