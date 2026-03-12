@@ -19,5 +19,5 @@ export function proxy(request: NextRequest) {
 
 // Configure which routes to run middleware on
 export const config = {
-  matcher: ["/", "/profile", "/profile/(.*)", "/login", "/signup"],
+  matcher: ["/", "/profile", "/profile/(.*)", "/login", "/signup", "/verifyemail"],
 };
